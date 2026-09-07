@@ -35,6 +35,7 @@ export default function LoginPage() {
       // Simpan session admin di localStorage
       localStorage.setItem('admin_user', JSON.stringify(data.user));
       router.push('/dashboard');
+      router.refresh();
     } catch {
       setErrorMsg('Gagal terhubung ke server. Pastikan database MySQL aktif.');
     } finally {

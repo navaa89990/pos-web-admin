@@ -58,9 +58,14 @@ export async function POST(request: Request) {
       user: tokenPayload,
     });
 
+    // Cek protokol HTTPS dari reverse proxy / request URL
+    const isHttps =
+      request.headers.get('x-forwarded-proto') === 'https' ||
+      request.url.startsWith('https:');
+
     response.cookies.set('admin_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isHttps,
       sameSite: 'lax',
       path: '/',
       maxAge: 7 * 24 * 60 * 60, // 7 hari
