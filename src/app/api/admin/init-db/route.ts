@@ -45,6 +45,7 @@ export async function GET(request: Request) {
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         email VARCHAR(150) NOT NULL UNIQUE,
+        password VARCHAR(255) NULL,
         phone VARCHAR(30) NULL,
         status ENUM('Aktif', 'Pending', 'Nonaktif') DEFAULT 'Pending',
         avatar TEXT NULL,
@@ -52,6 +53,13 @@ export async function GET(request: Request) {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       );
     `);
+
+    // Pastikan kolom password ada di tabel users (jika tabel sudah pernah dibuat sebelumnya)
+    try {
+      await pool.query('ALTER TABLE users ADD COLUMN password VARCHAR(255) NULL AFTER email');
+    } catch {
+      // Kolom sudah ada
+    }
 
     // 3. Tabel Activations
     await pool.query(`

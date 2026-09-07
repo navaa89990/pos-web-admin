@@ -45,3 +45,26 @@ export function verifyToken(token: string): AdminTokenPayload | null {
   }
 }
 
+/**
+ * Membuat token reset password khusus (berlaku 15 menit)
+ */
+export function signResetToken(email: string): string {
+  return jwt.sign({ email, purpose: 'reset_password' }, JWT_SECRET, { expiresIn: '15m' });
+}
+
+/**
+ * Verifikasi token reset password
+ */
+export function verifyResetToken(token: string): { email: string } | null {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { email: string; purpose: string };
+    if (decoded.purpose !== 'reset_password') {
+      return null;
+    }
+    return { email: decoded.email };
+  } catch {
+    return null;
+  }
+}
+
+

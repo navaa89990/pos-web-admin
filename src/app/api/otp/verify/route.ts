@@ -48,7 +48,15 @@ export async function POST(request: Request) {
     // Hapus OTP setelah berhasil diverifikasi
     await pool.query('DELETE FROM otps WHERE id = ?', [stored.id]);
 
-    return NextResponse.json({ success: true, message: 'OTP valid dan terverifikasi.' });
+    // Buat token reset khusus untuk verifikasi saat ubah sandi
+    const { signResetToken } = await import('@/lib/auth');
+    const resetToken = signResetToken(cleanEmail);
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Kode OTP valid. Silakan buat password baru.',
+      resetToken 
+    });
   } catch (err: unknown) {
     console.error('Error otp/verify:', err);
     const message = err instanceof Error ? err.message : 'Terjadi kesalahan pada server.';

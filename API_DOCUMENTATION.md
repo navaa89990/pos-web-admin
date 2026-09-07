@@ -1,7 +1,7 @@
 # Dokumentasi Lengkap API Endpoint - POS Mobile & Web Admin
 
 Base URL:
-- **Produksi (VPS / Coolify)**: `http://ykvthgrih3nrip9g3w9p8qls.54.163.124.13.sslip.io` (atau domain kustom Anda)
+- **Produksi (VPS / Coolify)**: `http://ykvthgrih3nrip9g3w9p8qls.54.163.124.13.sslip.io`
 - **Lokal (Development)**: `http://localhost:3000`
 
 Format Pertukaran Data: `JSON (application/json)`
@@ -9,31 +9,34 @@ Format Pertukaran Data: `JSON (application/json)`
 ---
 
 ## Daftar Isi
-1. [Endpoint Mobile POS (Flutter Integration)](#1-endpoint-mobile-pos-flutter-integration)
-   - [POST /api/otp/send - Kirim OTP Email](#11-post-apiotpsend---kirim-otp-ke-email)
+1. [Endpoint Fitur Reset Password (OTP Flow)](#1-endpoint-fitur-reset-password-otp-flow)
+   - [POST /api/otp/send - Kirim OTP Reset Password](#11-post-apiotpsend---kirim-otp-reset-password)
    - [POST /api/otp/verify - Verifikasi Kode OTP](#12-post-apiotpverify---verifikasi-kode-otp)
-   - [POST /api/activations/submit - Pengajuan Aktivasi & Bukti Transaksi](#13-post-apiactivationssubmit---pengajuan-aktivasi--upload-bukti)
-   - [POST /api/activations/check - Cek Status Aktivasi](#14-post-apiactivationscheck---cek-status-aktivasi-perangkat)
-2. [Endpoint Otentikasi Admin](#2-endpoint-otentikasi-admin)
-   - [POST /api/admin/auth/login - Login Admin](#21-post-apiadminauthlogin---login-administrator)
-   - [POST /api/admin/auth/logout - Logout Admin](#22-post-apiadminauthlogout---logout-administrator)
-   - [GET /api/admin/auth/me - Cek Sesi Admin](#23-get-apiadminauthme---cek-profil-sesi-admin)
-3. [Endpoint Manajemen Data Web Admin](#3-endpoint-manajemen-data-web-admin)
-   - [GET /api/admin/stats - Ringkasan Statistik Dashboard](#31-get-apiadminstats---statistik-dashboard)
-   - [GET /api/admin/activations - Daftar Permohonan Aktivasi](#32-get-apiadminactivations---daftar-permohonan-aktivasi)
-   - [PUT /api/admin/activations - Setujui / Tolak Permohonan](#33-put-apiadminactivations---setujui--tolak-aktivasi)
-   - [GET /api/admin/users - Daftar Pengguna / Merchant](#34-get-apiadminusers---daftar-pengguna-merchant)
-   - [PUT /api/admin/users - Perbarui Status Pengguna](#35-put-apiadminusers---perbarui-status-pengguna)
-   - [DELETE /api/admin/users - Hapus Pengguna](#36-delete-apiadminusers---hapus-pengguna)
-   - [GET /api/admin/notifications - Notifikasi Sistem](#37-get-apiadminnotifications---daftar-notifikasi-sistem)
-   - [GET /api/admin/init-db - Inisialisasi Database](#38-get-apiadmininit-db---inisialisasi-database-instan)
+   - [POST /api/otp/reset-password - Simpan Password Baru](#13-post-apiotpreset-password---simpan-password-baru)
+2. [Endpoint Mobile POS (Flutter Integration)](#2-endpoint-mobile-pos-flutter-integration)
+   - [POST /api/activations/submit - Pengajuan Aktivasi & Bukti Transaksi](#21-post-apiactivationssubmit---pengajuan-aktivasi--upload-bukti)
+   - [POST /api/activations/check - Cek Status Aktivasi Perangkat](#22-post-apiactivationscheck---cek-status-aktivasi-perangkat)
+3. [Endpoint Otentikasi Admin](#3-endpoint-otentikasi-admin)
+   - [POST /api/admin/auth/login - Login Admin](#31-post-apiadminauthlogin---login-administrator)
+   - [POST /api/admin/auth/logout - Logout Admin](#32-post-apiadminauthlogout---logout-administrator)
+   - [GET /api/admin/auth/me - Cek Sesi Admin](#33-get-apiadminauthme---cek-profil-sesi-admin)
+4. [Endpoint Manajemen Data Web Admin](#4-endpoint-manajemen-data-web-admin)
+   - [GET /api/admin/stats - Ringkasan Statistik Dashboard](#41-get-apiadminstats---statistik-dashboard)
+   - [GET /api/admin/activations - Daftar Permohonan Aktivasi](#42-get-apiadminactivations---daftar-permohonan-aktivasi)
+   - [PUT /api/admin/activations - Setujui / Tolak Permohonan](#43-put-apiadminactivations---setujui--tolak-aktivasi)
+   - [GET /api/admin/users - Daftar Pengguna / Merchant](#44-get-apiadminusers---daftar-pengguna-merchant)
+   - [PUT /api/admin/users - Perbarui Status Pengguna](#45-put-apiadminusers---perbarui-status-pengguna)
+   - [DELETE /api/admin/users - Hapus Pengguna](#46-delete-apiadminusers---hapus-pengguna)
+   - [GET /api/admin/notifications - Notifikasi Sistem](#47-get-apiadminnotifications---daftar-notifikasi-sistem)
+   - [GET /api/admin/init-db - Inisialisasi Database](#48-get-apiadmininit-db---inisialisasi-database-instan)
 
 ---
 
-## 1. Endpoint Mobile POS (Flutter Integration)
+## 1. Endpoint Fitur Reset Password (OTP Flow)
+Alur pengaturan ulang kata sandi (lupa sandi) untuk Administrator Web maupun Pengguna/Merchant aplikasi Mobile POS:
 
-### 1.1. `POST /api/otp/send` - Kirim OTP ke Email
-Digunakan oleh aplikasi Flutter saat registrasi/verifikasi awal untuk mengirimkan kode OTP 6-digit ke email merchant via Resend.
+### 1.1. `POST /api/otp/send` - Kirim OTP Reset Password
+Mengirimkan 6-digit kode OTP ke email pengguna/admin untuk verifikasi permohonan reset password (masa aktif 5 menit).
 
 - **URL**: `/api/otp/send`
 - **Method**: `POST`
@@ -44,28 +47,28 @@ Digunakan oleh aplikasi Flutter saat registrasi/verifikasi awal untuk mengirimka
 - **Request Body**:
   ```json
   {
-    "email": "merchant@gmail.com"
+    "email": "admin@posmobile.com"
   }
   ```
 - **Response Sukses (200 OK)**:
   ```json
   {
     "success": true,
-    "message": "Kode OTP berhasil dikirim ke email Anda."
+    "message": "Kode OTP reset password berhasil dikirim ke email."
   }
   ```
-- **Response Error (400 Bad Request)**:
+- **Response Error (404 Not Found)**:
   ```json
   {
     "success": false,
-    "message": "Email wajib diisi."
+    "message": "Email tidak terdaftar dalam sistem."
   }
   ```
 
 ---
 
 ### 1.2. `POST /api/otp/verify` - Verifikasi Kode OTP
-Memvalidasi kode OTP 6-digit yang dimasukkan merchant di aplikasi Flutter. Masa berlaku OTP adalah 5 menit.
+Memvalidasi 6-digit kode OTP yang diterima pengguna. Jika valid, endpoint mengembalikan `resetToken` bertanda tangan JWT (masa berlaku 15 menit) untuk autorisasi ubah sandi.
 
 - **URL**: `/api/otp/verify`
 - **Method**: `POST`
@@ -76,15 +79,16 @@ Memvalidasi kode OTP 6-digit yang dimasukkan merchant di aplikasi Flutter. Masa 
 - **Request Body**:
   ```json
   {
-    "email": "merchant@gmail.com",
-    "otp": "582194"
+    "email": "admin@posmobile.com",
+    "otp": "849201"
   }
   ```
 - **Response Sukses (200 OK)**:
   ```json
   {
     "success": true,
-    "message": "OTP valid dan terverifikasi."
+    "message": "Kode OTP valid. Silakan buat password baru.",
+    "resetToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
   ```
 - **Response Error (400 Bad Request)**:
@@ -98,7 +102,44 @@ Memvalidasi kode OTP 6-digit yang dimasukkan merchant di aplikasi Flutter. Masa 
 
 ---
 
-### 1.3. `POST /api/activations/submit` - Pengajuan Aktivasi & Upload Bukti
+### 1.3. `POST /api/otp/reset-password` - Simpan Password Baru
+Menyimpan kata sandi baru yang telah dienkripsi bcrypt ke database (mendukung akun `admins` maupun `users`). Mendukung otorisasi via `resetToken` atau kode `otp` langsung.
+
+- **URL**: `/api/otp/reset-password`
+- **Method**: `POST`
+- **Headers**:
+  ```http
+  Content-Type: application/json
+  ```
+- **Request Body**:
+  ```json
+  {
+    "email": "admin@posmobile.com",
+    "resetToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "newPassword": "passwordBaru123"
+  }
+  ```
+  *(Catatan: Anda juga dapat mengirim `"otp": "849201"` sebagai pengganti `resetToken`)*
+- **Response Sukses (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Password baru berhasil disimpan. Silakan masuk menggunakan kata sandi baru Anda."
+  }
+  ```
+- **Response Error (401 Unauthorized)**:
+  ```json
+  {
+    "success": false,
+    "message": "Sesi reset password tidak valid atau telah kedaluwarsa. Silakan minta kode OTP baru."
+  }
+  ```
+
+---
+
+## 2. Endpoint Mobile POS (Flutter Integration)
+
+### 2.1. `POST /api/activations/submit` - Pengajuan Aktivasi & Upload Bukti
 Digunakan saat merchant mengajukan aktivasi aplikasi POS Mobile dengan menyertakan nomor telepon dan foto bukti transaksi/pembayaran.
 
 - **URL**: `/api/activations/submit`
@@ -134,7 +175,7 @@ Digunakan saat merchant mengajukan aktivasi aplikasi POS Mobile dengan menyertak
 
 ---
 
-### 1.4. `POST /api/activations/check` - Cek Status Aktivasi Perangkat
+### 2.2. `POST /api/activations/check` - Cek Status Aktivasi Perangkat
 Dipanggil oleh aplikasi Flutter setiap kali dibuka untuk mengecek apakah perangkat/akun merchant sudah disetujui oleh admin atau masih menunggu.
 
 - **URL**: `/api/activations/check`
@@ -445,3 +486,4 @@ Endpoint sekali pakai untuk inisialisasi tabel MySQL dan seeding admin pertama k
     }
   }
   ```
+
