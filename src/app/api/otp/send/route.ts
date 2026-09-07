@@ -34,9 +34,7 @@ export async function POST(request: Request) {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 5 * 60 * 1000;
-    
-    // Hapus OTP lama dan simpan yang baru
-    await pool.query('DELETE FROM otps WHERE email = ?', [cleanEmail]);
+        await pool.query('DELETE FROM otps WHERE email = ?', [cleanEmail]);
     await pool.query(
       'INSERT INTO otps (email, otp, expires_at) VALUES (?, ?, ?)',
       [cleanEmail, otp, expiresAt]

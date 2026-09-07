@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ShieldCheck, Clock, AlertTriangle, Inbox, CheckCircle, XCircle, Eye, X } from 'lucide-react';
+import { ShieldCheck, Clock, AlertTriangle, Inbox, CheckCircle, XCircle, Eye, X, Trash2 } from 'lucide-react';
 import { ActivationTrendChart } from '@/components/dashboard';
 
 interface ActivationItem {
@@ -19,6 +19,8 @@ export default function AktivasiPage() {
   const [activations, setActivations] = useState<ActivationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [deletingActivation, setDeletingActivation] = useState<ActivationItem | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const refreshActivations = useCallback(async () => {
     try {
@@ -85,6 +87,28 @@ export default function AktivasiPage() {
       }
     } catch {
       alert('Terjadi kesalahan saat memproses permohonan.');
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingActivation) return;
+    setDeleteLoading(true);
+
+    try {
+      const res = await fetch(`/api/admin/activations?id=${deletingActivation.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        await refreshActivations();
+        setDeletingActivation(null);
+      } else {
+        alert(data.message || 'Gagal menghapus pengajuan aktivasi.');
+      }
+    } catch {
+      alert('Terjadi kesalahan saat menghapus pengajuan aktivasi.');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -232,26 +256,35 @@ export default function AktivasiPage() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      {item.status === 'pending' ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleApprove(item.id)}
-                            className="px-3.5 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
-                          >
-                            <CheckCircle className="w-3.5 h-3.5" />
-                            Setujui
-                          </button>
-                          <button
-                            onClick={() => handleReject(item.id)}
-                            className="px-3.5 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
-                          >
-                            <XCircle className="w-3.5 h-3.5" />
-                            Tolak
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-gray-400">Selesai</span>
-                      )}
+                      <div className="flex items-center justify-center gap-2">
+                        {item.status === 'pending' ? (
+                          <>
+                            <button
+                              onClick={() => handleApprove(item.id)}
+                              className="px-3.5 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                            >
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              Setujui
+                            </button>
+                            <button
+                              onClick={() => handleReject(item.id)}
+                              className="px-3.5 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                              Tolak
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-400 mr-1">Selesai</span>
+                        )}
+                        <button
+                          onClick={() => setDeletingActivation(item)}
+                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                          title="Hapus Pengajuan"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -281,6 +314,42 @@ export default function AktivasiPage() {
                 alt="Bukti Aktivasi"
                 className="max-h-[60vh] object-contain rounded-lg shadow-sm"
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Hapus Pengajuan */}
+      {deletingActivation && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <h4 className="font-bold text-gray-900 text-base mb-1">Hapus Pengajuan Aktivasi</h4>
+              <p className="text-xs text-gray-500 mb-6 leading-relaxed">
+                Apakah Anda yakin ingin menghapus data permohonan aktivasi untuk merchant{' '}
+                <span className="font-semibold text-gray-800">{deletingActivation.email}</span>? Tindakan ini tidak dapat dibatalkan.
+              </p>
+              <div className="flex items-center gap-3 w-full">
+                <button
+                  type="button"
+                  onClick={() => setDeletingActivation(null)}
+                  disabled={deleteLoading}
+                  className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteConfirm}
+                  disabled={deleteLoading}
+                  className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-60"
+                >
+                  {deleteLoading ? 'Menghapus...' : 'Ya, Hapus'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

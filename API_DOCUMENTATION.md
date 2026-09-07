@@ -24,11 +24,12 @@ Format Pertukaran Data: `JSON (application/json)`
    - [GET /api/admin/stats - Ringkasan Statistik Dashboard](#41-get-apiadminstats---statistik-dashboard)
    - [GET /api/admin/activations - Daftar Permohonan Aktivasi](#42-get-apiadminactivations---daftar-permohonan-aktivasi)
    - [PUT /api/admin/activations - Setujui / Tolak Permohonan](#43-put-apiadminactivations---setujui--tolak-aktivasi)
-   - [GET /api/admin/users - Daftar Pengguna / Merchant](#44-get-apiadminusers---daftar-pengguna-merchant)
-   - [PUT /api/admin/users - Perbarui Status Pengguna](#45-put-apiadminusers---perbarui-status-pengguna)
-   - [DELETE /api/admin/users - Hapus Pengguna](#46-delete-apiadminusers---hapus-pengguna)
-   - [GET /api/admin/notifications - Notifikasi Sistem](#47-get-apiadminnotifications---daftar-notifikasi-sistem)
-   - [GET /api/admin/init-db - Inisialisasi Database](#48-get-apiadmininit-db---inisialisasi-database-instan)
+   - [DELETE /api/admin/activations - Hapus Pengajuan Aktivasi](#44-delete-apiadminactivations---hapus-pengajuan-aktivasi)
+   - [GET /api/admin/users - Daftar Pengguna / Merchant](#45-get-apiadminusers---daftar-pengguna-merchant)
+   - [PUT /api/admin/users - Perbarui Status Pengguna](#46-put-apiadminusers---perbarui-status-pengguna)
+   - [DELETE /api/admin/users - Hapus Pengguna](#47-delete-apiadminusers---hapus-pengguna)
+   - [GET /api/admin/notifications - Notifikasi Sistem](#48-get-apiadminnotifications---daftar-notifikasi-sistem)
+   - [GET /api/admin/init-db - Inisialisasi Database](#49-get-apiadmininit-db---inisialisasi-database-instan)
 
 ---
 
@@ -379,7 +380,29 @@ Mengubah status pengajuan aktivasi menjadi `disetujui` atau `ditolak`.
 
 ---
 
-### 3.4. `GET /api/admin/users` - Daftar Pengguna / Merchant
+### 4.4. `DELETE /api/admin/activations` - Hapus Pengajuan Aktivasi
+Menghapus data permohonan aktivasi dari database berdasarkan ID.
+
+- **URL**: `/api/admin/activations?id=1` *(atau via JSON body `{"id": 1}`)*
+- **Method**: `DELETE`
+- **Response Sukses (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Data pengajuan aktivasi berhasil dihapus."
+  }
+  ```
+- **Response Error (404 Not Found)**:
+  ```json
+  {
+    "success": false,
+    "message": "Data pengajuan aktivasi tidak ditemukan."
+  }
+  ```
+
+---
+
+### 4.5. `GET /api/admin/users` - Daftar Pengguna / Merchant
 Mengambil daftar seluruh merchant yang terdaftar di tabel `users`.
 
 - **URL**: `/api/admin/users`

@@ -126,3 +126,50 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    let id: string | number | null = searchParams.get('id');
+
+    if (!id) {
+      try {
+        const body = await request.json();
+        id = body.id;
+      } catch {
+        // Abaikan jika tidak ada body JSON
+      }
+    }
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: 'ID aktivasi wajib disertakan.' },
+        { status: 400 }
+      );
+    }
+
+    const [rows] = await pool.query<RowDataPacket[]>(
+      'SELECT id, email FROM activations WHERE id = ?',
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return NextResponse.json(
+        { success: false, message: 'Data pengajuan aktivasi tidak ditemukan.' },
+        { status: 404 }
+      );
+    }
+
+    await pool.query('DELETE FROM activations WHERE id = ?', [id]);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Data pengajuan aktivasi berhasil dihapus.',
+    });
+  } catch (error: unknown) {
+    console.error('Error DELETE admin/activations:', error);
+    const message = error instanceof Error ? error.message : 'Terjadi kesalahan pada server.';
+    return NextResponse.json({ success: false, message }, { status: 500 });
+  }
+}
+
