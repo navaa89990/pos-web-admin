@@ -1,45 +1,59 @@
 'use client';
 
-import { useState } from 'react';
-import { Bell } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, Inbox } from 'lucide-react';
+import { NotificationItem } from '@/types';
 
 export default function HalamanNotifikasi() {
   const [activeTab, setActiveTab] = useState('Semua');
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const notifications = [
-    { id: 1, category: 'Transaksi', title: 'Transaksi Berhasil - Invoice #INV-20240901', description: 'Pembayaran berhasil diterima dan invoice telah dikirim ke pelanggan.', time: '2 menit lalu', unread: true },
-    { id: 2, category: 'Perangkat', title: 'Stok Produk Menipis - Kopi Arabica', description: 'Sisa stok 5 unit. Saran: lakukan restock untuk menghindari kehabisan.', time: '15 menit lalu', unread: true },
-    { id: 3, category: 'Perangkat', title: 'Printer Bluetooth Terputus', description: 'Perangkat printer tidak terdeteksi. Pastikan Bluetooth aktif dan printer dalam jangkauan.', time: '1 jam lalu', unread: false },
-    { id: 4, category: 'Keuangan', title: 'Tutup Kasir Shift Pagi - Rp 2.450.000', description: 'Rekap shift pagi telah selesai. Total penjualan Rp 2.450.000.', time: '3 jam lalu', unread: false },
-    { id: 5, category: 'Transaksi', title: 'Pesanan Baru Masuk - Meja 5', description: 'Pesanan baru dari Meja 5. Silahkan cek detail pesanan untuk diproses.', time: 'Kemarin', unread: true },
-    { id: 6, category: 'Perangkat', title: 'Pembaruan Sistem Tersedia v2.1.0', description: 'Versi terbaru tersedia. Update untuk mendapatkan fitur baru dan perbaikan performa.', time: '1 hari lalu', unread: false },
-    { id: 7, category: 'Keuangan', title: 'Refund Diproses - Invoice #INV-20240830', description: 'Refund telah diproses dan dana akan dikembalikan ke pelanggan.', time: '2 hari lalu', unread: false },
-    { id: 8, category: 'Keuangan', title: 'Saldo Penarikan Dana Berhasil', description: 'Penarikan dana ke rekening tujuan telah berhasil diproses.', time: '3 hari lalu', unread: false },
-  ];
+  useEffect(() => {
+    let isMounted = true;
 
-  const filteredNotifications = activeTab === 'Semua' 
-    ? notifications 
-    : notifications.filter(item => item.category === activeTab);
+    fetch('/api/admin/notifications')
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data.success) {
+          setNotifications(data.notifications);
+        }
+      })
+      .catch((err) => console.error('Gagal memuat notifikasi:', err))
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filteredNotifications =
+    activeTab === 'Semua'
+      ? notifications
+      : notifications.filter((item) => item.category === activeTab);
 
   return (
     <>
       <div className="mb-6">
         <div className="flex items-center text-sm text-gray-500 mb-2 gap-2">
-           <span>Admin</span>
-           <span>›</span>
-           <span className="text-green-600 font-medium">Notifikasi</span>
+          <span>Admin</span>
+          <span>›</span>
+          <span className="text-green-600 font-medium">Notifikasi</span>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-1">Notifikasi sistem</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-1">Notifikasi Sistem</h2>
+        <p className="text-gray-500 text-sm">Pusat pemantauan aktivitas perangkat dan transaksi POS</p>
       </div>
 
-      <div className="flex gap-3 mb-6">
-        {['Semua', 'Transaksi', 'Perangkat', 'Keuangan'].map((tab) => (
+      <div className="flex gap-3 mb-6 overflow-x-auto pb-1">
+        {['Semua', 'Aktivasi', 'Perangkat', 'Transaksi', 'Keuangan'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-5 py-2 rounded-full text-xs font-semibold transition-colors shrink-0 ${
               activeTab === tab
-                ? 'bg-[#117554] text-white'
+                ? 'bg-[#117554] text-white shadow-sm'
                 : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
             }`}
           >
@@ -48,37 +62,56 @@ export default function HalamanNotifikasi() {
         ))}
       </div>
 
-      <div className="space-y-4 mb-8">
-        {filteredNotifications.map((item) => (
-          <div 
-            key={item.id} 
-            className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between transition-colors hover:border-[#117554]/30"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-[#117554] text-white flex items-center justify-center shrink-0">
-                <Bell className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-gray-900">{item.title}</h4>
-                <p className="text-sm text-gray-500 mt-0.5">{item.description}</p>
-              </div>
-            </div>
-            
-            <div className="flex flex-col items-end gap-2 shrink-0 min-w-[80px]">
-              {item.unread ? (
-                <div className="w-2.5 h-2.5 rounded-full bg-[#117554]"></div>
-              ) : (
-                <div className="w-2.5 h-2.5"></div>
-              )}
-              <span className="text-xs text-gray-400">{item.time}</span>
-            </div>
+      <div className="space-y-4 mb-8 min-h-[300px]">
+        {loading ? (
+          <div className="p-12 text-center text-gray-400 text-sm">Memuat notifikasi...</div>
+        ) : filteredNotifications.length === 0 ? (
+          <div className="bg-white p-16 rounded-2xl border border-gray-100 shadow-sm text-center flex flex-col items-center justify-center text-gray-400">
+            <Inbox className="w-14 h-14 mb-3 stroke-[1.5] text-gray-300" />
+            <p className="font-semibold text-base text-gray-700">Tidak ada notifikasi</p>
+            <p className="text-xs text-gray-400 mt-1 max-w-sm">
+              Notifikasi baru mengenai aktivasi perangkat atau aktivitas kasir akan muncul di sini.
+            </p>
           </div>
-        ))}
+        ) : (
+          filteredNotifications.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between transition-colors hover:border-[#117554]/30"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-11 h-11 rounded-full bg-[#117554]/10 text-[#117554] flex items-center justify-center shrink-0">
+                  <Bell className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600">
+                      {item.category}
+                    </span>
+                    <h4 className="text-sm font-bold text-gray-900">{item.title}</h4>
+                  </div>
+                  <p className="text-xs text-gray-500">{item.description}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-end gap-2 shrink-0 min-w-[80px]">
+                {item.unread ? (
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#117554]"></div>
+                ) : (
+                  <div className="w-2.5 h-2.5"></div>
+                )}
+                <span className="text-[11px] text-gray-400">{item.time}</span>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       <footer className="flex items-center justify-between text-xs text-gray-500 py-4 mt-auto">
-         <p>© 2026 AppActivator - Panel Admin</p>
-         <a href="#" className="hover:text-[#117554] underline">Kebijakan Privasi</a>
+        <p>© 2026 Pos Mobile - Panel Admin</p>
+        <a href="#" className="hover:text-[#117554] underline">
+          Kebijakan Privasi
+        </a>
       </footer>
     </>
   );

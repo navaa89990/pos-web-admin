@@ -1,11 +1,21 @@
-import Sidebar from "../../components/Sidebar";
-import Header from "../../components/Header";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { verifyToken } from "@/lib/auth";
+import Sidebar from "@/components/layout/Sidebar";
+import Header from "@/components/layout/Header";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin_token")?.value;
+
+  if (!token || !verifyToken(token)) {
+    redirect("/login");
+  }
+
   return (
     <div className="min-h-screen flex bg-[#f8f9fa] font-sans">
       <Sidebar />
