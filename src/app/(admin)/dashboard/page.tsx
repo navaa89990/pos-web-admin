@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Users, Shield, Clock, AlertTriangle, Inbox, CheckCircle, XCircle } from 'lucide-react';
+import { Users, Shield, Clock, AlertTriangle, Inbox, CheckCircle, XCircle, Eye, X } from 'lucide-react';
 import { MonthlyChart, StatusDonutChart } from '@/components/dashboard';
 import { StatCard } from '@/components/ui';
 
@@ -20,6 +20,7 @@ interface ActivationRow {
   name: string;
   email: string;
   phone: string;
+  proofImage?: string;
   date: string;
   status: string;
 }
@@ -43,6 +44,7 @@ export default function DashboardPage() {
   });
 
   const [pendingActivations, setPendingActivations] = useState<ActivationRow[]>([]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshData = useCallback(async () => {
@@ -275,6 +277,7 @@ export default function DashboardPage() {
                   <th className="px-6 py-4">EMAIL / NAMA</th>
                   <th className="px-6 py-4">NO. TELEPON</th>
                   <th className="px-6 py-4">TANGGAL PENGAJUAN</th>
+                  <th className="px-6 py-4 text-center">BUKTI FOTO</th>
                   <th className="px-6 py-4 text-center">AKSI</th>
                 </tr>
               </thead>
@@ -284,6 +287,19 @@ export default function DashboardPage() {
                     <td className="px-6 py-4 font-medium text-gray-900">{row.email}</td>
                     <td className="px-6 py-4">{row.phone}</td>
                     <td className="px-6 py-4">{row.date}</td>
+                    <td className="px-6 py-4 text-center">
+                      {row.proofImage ? (
+                        <button
+                          onClick={() => setPreviewImage(row.proofImage || null)}
+                          className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-colors inline-flex items-center gap-1.5"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          Lihat Foto
+                        </button>
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">Tidak ada</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
                         <button
@@ -316,6 +332,31 @@ export default function DashboardPage() {
           Kebijakan Privasi
         </a>
       </footer>
+
+      {/* Modal Preview Bukti Foto */}
+      {previewImage && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-4 shadow-2xl relative">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
+              <h4 className="font-bold text-gray-900 text-sm">Bukti Pembayaran / Transaksi</h4>
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="max-h-[70vh] overflow-auto flex justify-center bg-gray-50 rounded-xl p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewImage}
+                alt="Bukti Aktivasi"
+                className="max-h-[60vh] object-contain rounded-lg shadow-sm"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

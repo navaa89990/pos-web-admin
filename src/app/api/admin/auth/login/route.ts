@@ -15,8 +15,6 @@ export async function POST(request: Request) {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-
-    // Query admin dari tabel admins MySQL
     const [rows] = await pool.query<RowDataPacket[]>(
       'SELECT id, name, email, password, role FROM admins WHERE email = ? LIMIT 1',
       [cleanEmail]
@@ -30,8 +28,6 @@ export async function POST(request: Request) {
     }
 
     const admin = rows[0];
-
-    // Verifikasi password menggunakan bcrypt compare
     const isMatch = await comparePassword(password, admin.password);
     if (!isMatch) {
       return NextResponse.json(
@@ -39,8 +35,6 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
-
-    // Buat JWT token untuk session admin
     const tokenPayload = {
       id: Number(admin.id),
       name: String(admin.name),
@@ -49,16 +43,12 @@ export async function POST(request: Request) {
     };
 
     const token = signToken(tokenPayload);
-
-    // Kirim response dan pasang httpOnly cookie admin_token
     const response = NextResponse.json({
       success: true,
       message: 'Login berhasil.',
       token,
       user: tokenPayload,
     });
-
-    // Cek protokol HTTPS dari reverse proxy / request URL
     const isHttps =
       request.headers.get('x-forwarded-proto') === 'https' ||
       request.url.startsWith('https:');
@@ -68,7 +58,7 @@ export async function POST(request: Request) {
       secure: isHttps,
       sameSite: 'lax',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60, // 7 hari
+      maxAge: 7 * 24 * 60 * 60,
     });
 
     return response;
