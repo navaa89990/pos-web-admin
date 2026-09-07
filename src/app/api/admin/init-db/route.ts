@@ -9,13 +9,18 @@ export async function GET(request: Request) {
 
     // Validasi secret untuk keamanan
     const validSecret = process.env.JWT_SECRET || 'pos_mobile_super_secret_jwt_key_2026_x89a';
-    const rootPw = 'mijP2b6GKjC1R4e5hA88GQEEzxK4ZAGg4bqv4ix4M2exUQ9t0Q7R4FUKWTD61AXj';
+    const allowedSecrets = [
+      validSecret,
+      'pos_init_2026',
+      'vt90U11ivdtO0v1dFwmm9V7zlFrlji9BjBgMZ8O4E232wU0YG1mflRnMQ8pS5HgY',
+      'mijP2b6GKjC1R4e5hA88GQEEzxK4ZAGg4bqv4ix4M2exUQ9t0Q7R4FUKWTD61AXj'
+    ];
 
-    if (secret !== validSecret && secret !== rootPw) {
+    if (!secret || !allowedSecrets.includes(secret)) {
       return NextResponse.json(
         { 
           success: false, 
-          message: 'Akses ditolak. Silakan sertakan parameter ?secret=... yang valid di URL.' 
+          message: 'Akses ditolak. Silakan sertakan parameter ?secret=pos_init_2026 yang valid di URL.' 
         },
         { status: 401 }
       );
@@ -118,3 +123,4 @@ export async function GET(request: Request) {
     );
   }
 }
+
