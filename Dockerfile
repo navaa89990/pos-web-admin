@@ -15,6 +15,8 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV RESEND_API_KEY=re_placeholder_for_build
+ENV SMTP_USER=""
+ENV SMTP_PASS=""
 
 RUN npm run build
 

@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { Resend } from 'resend';
 import type { RowDataPacket } from 'mysql2';
-
-const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_for_build');
+import { sendEmail } from '@/lib/mail';
 
 export async function GET() {
   try {
@@ -88,8 +86,8 @@ export async function PUT(request: Request) {
       );
     }
 
-    // Kirim email pemberitahuan ke merchant via Resend
-    if (process.env.RESEND_API_KEY && activation.email) {
+    // Kirim email pemberitahuan ke merchant via SMTP
+    if (activation.email) {
       const isApproved = cleanStatus === 'disetujui';
       const subject = isApproved
         ? 'Aktivasi POS Mobile Anda Telah Disetujui'
@@ -98,22 +96,17 @@ export async function PUT(request: Request) {
         ? '<p>Selamat! Akun dan perangkat POS Mobile Anda telah <b>disetujui</b>. Anda sekarang dapat masuk dan menggunakan seluruh fitur kasir di aplikasi mobile.</p>'
         : '<p>Mohon maaf, permohonan aktivasi POS Mobile Anda belum dapat disetujui saat ini. Silakan periksa kembali bukti yang Anda lampirkan atau hubungi tim bantuan.</p>';
 
-      try {
-        await resend.emails.send({
-          from: 'POS Mobile <onboarding@resend.dev>',
-          to: [activation.email],
-          subject,
-          html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-              <h2 style="color: #117554;">Status Aktivasi POS Mobile</h2>
-              ${messageBody}
-              <p style="margin-top: 20px; font-size: 12px; color: #888;">© POS Mobile Administrator</p>
-            </div>
-          `,
-        });
-      } catch (emailErr) {
-        console.warn('Gagal mengirim email notifikasi aktivasi:', emailErr);
-      }
+      await sendEmail({
+        to: activation.email,
+        subject,
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+            <h2 style="color: #117554;">Status Aktivasi POS Mobile</h2>
+            ${messageBody}
+            <p style="margin-top: 20px; font-size: 12px; color: #888;">© POS Mobile Administrator</p>
+          </div>
+        `,
+      });
     }
 
     return NextResponse.json({

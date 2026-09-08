@@ -355,7 +355,7 @@ Mengambil seluruh riwayat aktivasi perangkat, termasuk foto bukti transaksi base
 
 ### 3.3. `PUT /api/admin/activations` - Setujui / Tolak Aktivasi
 Mengubah status pengajuan aktivasi menjadi `disetujui` atau `ditolak`.
-*Catatan Penting: Jika disetujui, sistem otomatis mendaftarkan merchant ke tabel `users` (dengan status `Aktif`) dan mengirimkan email konfirmasi ke merchant via Resend.*
+*Catatan Penting: Jika disetujui, sistem otomatis mendaftarkan merchant ke tabel `users` (dengan status `Aktif`) dan mengirimkan email konfirmasi ke merchant via SMTP (Gmail).*
 
 - **URL**: `/api/admin/activations`
 - **Method**: `PUT`
