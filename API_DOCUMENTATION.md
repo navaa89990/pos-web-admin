@@ -1,7 +1,7 @@
 # Dokumentasi Lengkap API Endpoint - POS Mobile & Web Admin
 
 Base URL:
-- **Produksi (VPS / Coolify)**: `http://ykvthgrih3nrip9g3w9p8qls.54.163.124.13.sslip.io`
+- **Produksi (VPS / Coolify)**: `https://web-atmin.my.id`
 - **Lokal (Development)**: `http://localhost:3000`
 
 Format Pertukaran Data: `JSON (application/json)`
