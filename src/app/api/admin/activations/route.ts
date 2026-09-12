@@ -142,7 +142,7 @@ export async function DELETE(request: Request) {
     }
 
     const [rows] = await pool.query<RowDataPacket[]>(
-      'SELECT id, email FROM activations WHERE id = ?',
+      'SELECT id, email, phone FROM activations WHERE id = ?',
       [id]
     );
 
@@ -153,11 +153,18 @@ export async function DELETE(request: Request) {
       );
     }
 
+    const act = rows[0];
+
+    // Hapus dari tabel activations
     await pool.query('DELETE FROM activations WHERE id = ?', [id]);
+
+    // Hapus juga dari tabel users dan otps jika ada
+    await pool.query('DELETE FROM users WHERE email = ? OR (phone = ? AND phone != "")', [act.email, act.phone]);
+    await pool.query('DELETE FROM otps WHERE email = ?', [act.email]);
 
     return NextResponse.json({
       success: true,
-      message: 'Data pengajuan aktivasi berhasil dihapus.',
+      message: 'Data pengajuan aktivasi dan akun merchant terkait berhasil dihapus.',
     });
   } catch (error: unknown) {
     console.error('Error DELETE admin/activations:', error);

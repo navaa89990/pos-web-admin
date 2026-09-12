@@ -50,8 +50,25 @@ export async function PUT(request: Request) {
         { status: 400 }
       );
     }
+    const [userRows] = await pool.query<RowDataPacket[]>(
+      'SELECT email, phone FROM users WHERE id = ?',
+      [id]
+    );
 
+    if (userRows.length === 0) {
+      return NextResponse.json(
+        { success: false, message: 'Pengguna tidak ditemukan.' },
+        { status: 404 }
+      );
+    }
+
+    const user = userRows[0];
     await pool.query('UPDATE users SET status = ? WHERE id = ?', [status, id]);
+    const actStatus = status === 'Aktif' ? 'disetujui' : status === 'Nonaktif' ? 'ditolak' : 'pending';
+    await pool.query(
+      'UPDATE activations SET status = ? WHERE email = ? OR (phone = ? AND phone != "")',
+      [actStatus, user.email, user.phone]
+    );
 
     return NextResponse.json({
       success: true,
@@ -75,12 +92,29 @@ export async function DELETE(request: Request) {
         { status: 400 }
       );
     }
+    const [userRows] = await pool.query<RowDataPacket[]>(
+      'SELECT id, name, email, phone FROM users WHERE id = ?',
+      [id]
+    );
 
+    if (userRows.length === 0) {
+      return NextResponse.json(
+        { success: false, message: 'Pengguna tidak ditemukan.' },
+        { status: 404 }
+      );
+    }
+
+    const user = userRows[0];
     await pool.query('DELETE FROM users WHERE id = ?', [id]);
+    await pool.query(
+      'DELETE FROM activations WHERE email = ? OR (phone = ? AND phone != "")',
+      [user.email, user.phone]
+    );
+    await pool.query('DELETE FROM otps WHERE email = ?', [user.email]);
 
     return NextResponse.json({
       success: true,
-      message: 'Pengguna berhasil dihapus.',
+      message: 'Pengguna dan sesi aktivasi terkait berhasil dihapus.',
     });
   } catch (error: unknown) {
     console.error('Error DELETE admin/users:', error);
