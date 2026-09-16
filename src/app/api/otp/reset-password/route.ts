@@ -22,8 +22,6 @@ export async function POST(request: Request) {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-
-    // 1. Verifikasi Otorisasi: Baik melalui resetToken maupun kode OTP langsung
     let isAuthorized = false;
 
     if (resetToken) {
@@ -44,7 +42,6 @@ export async function POST(request: Request) {
         const stored = rows[0];
         if (Date.now() <= Number(stored.expires_at) && stored.otp === cleanOtp) {
           isAuthorized = true;
-          // Hapus OTP setelah berhasil diverifikasi
           await pool.query('DELETE FROM otps WHERE id = ?', [stored.id]);
         }
       }
@@ -59,20 +56,13 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
-
-    // 2. Hash password baru dengan bcrypt
     const hashedPassword = await hashPassword(newPassword);
-
-    // 3. Pastikan kolom password ada di tabel users (jika belum ada)
     try {
       await pool.query(
         "ALTER TABLE users ADD COLUMN password VARCHAR(255) NULL AFTER email"
       );
     } catch {
-      // Abaikan jika kolom sudah ada
     }
-
-    // 4. Update password di tabel admins atau users
     const [adminResult] = await pool.query<ResultSetHeader>(
       'UPDATE admins SET password = ? WHERE email = ?',
       [hashedPassword, cleanEmail]
@@ -89,11 +79,7 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
-
-    // 5. Bersihkan semua OTP tersisa untuk email ini
     await pool.query('DELETE FROM otps WHERE email = ?', [cleanEmail]);
-
-    // 6. Catat notifikasi sistem
     await pool.query(
       `INSERT INTO notifications (category, title, description) 
        VALUES ('Keamanan', 'Reset Password Berhasil', ?)`,
