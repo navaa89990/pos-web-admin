@@ -12,14 +12,20 @@ async function seed() {
 
     // Buat database jika belum ada
     const rootUrl = `${parsedUrl.protocol}//${parsedUrl.username}:${parsedUrl.password}@${parsedUrl.host}`;
-    const initialConn = await mysql.createConnection(rootUrl);
+    const initialConn = await mysql.createConnection({
+      uri: rootUrl,
+      ssl: { rejectUnauthorized: true }
+    });
     await initialConn.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
     await initialConn.end();
   } catch (err) {
     console.log('Info: Melewati inisialisasi root DB (menggunakan koneksi langsung):', err.message);
   }
 
-  const connection = await mysql.createConnection(dbUrl);
+  const connection = await mysql.createConnection({
+  uri: dbUrl,
+  ssl: { rejectUnauthorized: true }
+  });
 
   try {
     console.log('Membuat tabel jika belum ada...');
